@@ -21,8 +21,11 @@ export default function UserHome() {
   }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("currentUser");
+    // Dispatch custom event to notify App component
+    window.dispatchEvent(new Event("logout"));
     window.location.href = "/login";
   };
 

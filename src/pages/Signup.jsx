@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { signup } from "../api/auth";
 import "./Auth.css";
 
 export default function Signup() {
@@ -27,35 +28,22 @@ export default function Signup() {
         return;
       }
 
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      
-      if (users.find((u) => u.email === email)) {
-        setError("Email already registered");
-        setLoading(false);
-        return;
-      }
+      const response = await signup(name, email, password);
+      const { token, user } = response.data;
 
-      // Create new user (default role is 'user')
-      const newUser = {
-        id: Date.now(),
-        name,
-        email,
-        password,
-        role: "user", // Default role
-      };
-
-      // Save user
-      users.push(newUser);
-      localStorage.setItem("users", JSON.stringify(users));
-
-      // Auto-login after signup
+      // Store token and user info
+      localStorage.setItem("token", token);
+      localStorage.setItem("currentUser", JSON.stringify(user));
       localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("currentUser", JSON.stringify(newUser));
 
       // Redirect to home
       window.location.href = "/";
-    } catch {
-      setError("Signup failed. Please try again.");
+    } catch (err) {
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Signup failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
